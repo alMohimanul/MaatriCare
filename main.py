@@ -1,12 +1,9 @@
 import subprocess
 import os
-
-# Initialize logging before starting the application
 from Utils.logging_config import init_logging
 
 
 def launch_ui():
-    # Initialize comprehensive logging
     logger = init_logging()
     logger.info("🚀 Starting MaatriCare UI Application")
 

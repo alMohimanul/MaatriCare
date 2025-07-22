@@ -21,9 +21,9 @@ except ImportError as e:
     logger.warning(f"Using basic logging as fallback: {e}")
 
 # Import the new LangGraph orchestrator
-from Agent.agent_orchestrator import (
+from Agent.langgraph_orchestrator import (
     PatientContextManager,
-    MaatriCareLangGraphOrchestrator,
+    MaatriCareLangGraphNativeOrchestrator as MaatriCareLangGraphOrchestrator,
 )
 
 # Import output processor for cleaning responses
@@ -779,6 +779,48 @@ st.markdown(
         border: 1px solid #f85149 !important;
         color: #f85149 !important;
     }
+    
+    /* Link styling for YouTube videos and other links */
+    .assistant-message-content a {
+        color: #58a6ff !important;
+        text-decoration: underline !important;
+        font-weight: 500 !important;
+        transition: all 0.2s ease !important;
+        word-break: break-all !important;
+    }
+    
+    .assistant-message-content a:hover {
+        color: #79c0ff !important;
+        text-decoration: underline !important;
+    }
+    
+    /* YouTube link specific styling - only for special classes */
+    .youtube-button {
+        display: inline-block !important;
+        background: linear-gradient(135deg, #ff0000, #ff6b6b) !important;
+        color: #ffffff !important;
+        padding: 8px 12px !important;
+        border-radius: 6px !important;
+        text-decoration: none !important;
+        font-weight: 500 !important;
+        margin: 4px 2px !important;
+        font-size: 14px !important;
+        box-shadow: 0 2px 4px rgba(255, 0, 0, 0.2) !important;
+        transition: all 0.2s ease !important;
+    }
+    
+    .youtube-button:hover {
+        background: linear-gradient(135deg, #cc0000, #ff5252) !important;
+        color: #ffffff !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 8px rgba(255, 0, 0, 0.3) !important;
+        text-decoration: none !important;
+    }
+    
+    .youtube-button::before {
+        content: "▶️ ";
+        margin-right: 4px;
+    }
     </style>
 """,
     unsafe_allow_html=True,
@@ -886,6 +928,27 @@ def simple_markdown_to_html(text):
 
     # Convert **text** to <strong>text</strong>
     text = re.sub(r"\*\*(.*?)\*\*", r"<strong>\1</strong>", text)
+
+    # Handle markdown-style links [text](url) first - this is our primary format now
+    text = re.sub(
+        r"\[([^\]]+)\]\((https?://[^\)]+)\)",
+        lambda m: f'<a href="{m.group(2)}" target="_blank" rel="noopener noreferrer">{m.group(1)}</a>',
+        text,
+    )
+
+    # Handle "Link: URL" format only if not already converted
+    text = re.sub(
+        r'(?<!href=")Link:\s*(https?://[^\s\n]+)',
+        lambda m: f'<a href="{m.group(1)}" target="_blank" rel="noopener noreferrer">{m.group(1)}</a>',
+        text,
+    )
+
+    # Handle remaining bare URLs only if not already converted
+    text = re.sub(
+        r'(?<!href=")(?<!">)(https?://[^\s\n<>"]+)',
+        lambda m: f'<a href="{m.group(1)}" target="_blank" rel="noopener noreferrer">{m.group(1)}</a>',
+        text,
+    )
 
     # Convert lines starting with - to <li> items
     lines = text.split("\n")

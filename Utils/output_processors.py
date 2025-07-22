@@ -139,35 +139,35 @@ class OutputProcessors:
         ):
             # If response doesn't contain expected sections, return fallback structure
             return f"""**Key Nutrients for Week {week}:**
-- Folic acid: prevents birth defects
-- Iron: supports blood production
-- Calcium: builds strong bones
-- Protein: supports baby's growth
+            - Folic acid: prevents birth defects
+            - Iron: supports blood production
+            - Calcium: builds strong bones
+            - Protein: supports baby's growth
 
-**Daily Meal Plan:**
-**Breakfast:** Rice porridge with dal (1 bowl)
-**Mid-Morning:** Banana with yogurt (1 small cup)
-**Lunch:** Rice with fish curry and shak (1 plate)
-**Afternoon:** Boiled egg with crackers (1 egg, 2 crackers)
-**Dinner:** Dal with rice and vegetables (1 bowl each)
-**Before Bed:** Warm milk (1 glass)
+            **Daily Meal Plan:**
+            **Breakfast:** Rice porridge with dal (1 bowl)
+            **Mid-Morning:** Banana with yogurt (1 small cup)
+            **Lunch:** Rice with fish curry and shak (1 plate)
+            **Afternoon:** Boiled egg with crackers (1 egg, 2 crackers)
+            **Dinner:** Dal with rice and vegetables (1 bowl each)
+            **Before Bed:** Warm milk (1 glass)
 
-**Essential Bangladeshi Foods:**
-- Dal (lentils): high in protein and folate
-- Shak (leafy greens): rich in iron and vitamins
-- Hilsa fish: provides omega-3 fatty acids
-- Rice: main energy source
-- Seasonal fruits: vitamin C and fiber
+            **Essential Bangladeshi Foods:**
+            - Dal (lentils): high in protein and folate
+            - Shak (leafy greens): rich in iron and vitamins
+            - Hilsa fish: provides omega-3 fatty acids
+            - Rice: main energy source
+            - Seasonal fruits: vitamin C and fiber
 
-**Foods to Avoid:**
-- Raw fish: risk of infection
-- Unpasteurized dairy: bacterial contamination
-- Raw papaya: may cause contractions
+            **Foods to Avoid:**
+            - Raw fish: risk of infection
+            - Unpasteurized dairy: bacterial contamination
+            - Raw papaya: may cause contractions
 
-**Practical Tips:**
-- Eat small, frequent meals to manage nausea
-- Cook vegetables thoroughly for safety
-- Include variety of colors in meals
-- Stay hydrated with clean water"""
+            **Practical Tips:**
+            - Eat small, frequent meals to manage nausea
+            - Cook vegetables thoroughly for safety
+            - Include variety of colors in meals
+            - Stay hydrated with clean water"""
 
         return content
