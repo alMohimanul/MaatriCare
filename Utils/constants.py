@@ -1,14 +1,4 @@
-# ============= MaatriCare Agent Constants =============
-"""
-Constants, keywords, prompts, and configuration values for MaatriCare agents.
-This file centralizes all magic strings and provides a single source of truth
-for agent behavior configuration.
-"""
-
 from typing import List, Dict, Tuple
-
-
-# ============= Intent Classification Keywords =============
 
 
 class IntentKeywords:
@@ -45,6 +35,52 @@ class IntentKeywords:
     # Regular intent keywords
     SCHEDULING_KEYWORDS: List[str] = ["appointment", "schedule", "visit", "next visit"]
     NUTRITION_KEYWORDS: List[str] = ["nutrition", "food", "eat", "diet"]
+
+    # Mood and emotional support keywords
+    MOOD_KEYWORDS: List[str] = [
+        "sad",
+        "depressed",
+        "down",
+        "low",
+        "upset",
+        "anxious",
+        "stressed",
+        "crying",
+        "emotional",
+        "moody",
+        "feel bad",
+        "feel terrible",
+        "unhappy",
+        "worried",
+        "feeling low",
+        "blue",
+        "overwhelmed",
+        "hopeless",
+        "discouraged",
+        "tired",
+        "exhausted",
+        "lonely",
+    ]
+
+    # Exercise keywords
+    EXERCISE_KEYWORDS: List[str] = [
+        "exercise",
+        "workout",
+        "fitness",
+        "stretching",
+        "yoga",
+        "walking",
+        "physical activity",
+        "movement",
+        "prenatal exercise",
+        "prenatal yoga",
+        "stay active",
+        "stay fit",
+        "strengthen",
+        "posture",
+        "back pain",
+    ]
+
     POSTPARTUM_KEYWORDS: List[str] = [
         "postpartum",
         "after birth",
@@ -62,13 +98,52 @@ class IntentKeywords:
     PROFILE_KEYWORDS: List[str] = ["profile", "information", "details"]
 
 
-# ============= Emergency Response Configuration =============
+# YouTube Search Configuration
+class YouTubeConfig:
+    """YouTube search configuration"""
+
+    MAX_RESULTS: int = 3
+
+    # Mood support video search queries
+    MOOD_SUPPORT_QUERIES: List[str] = [
+        "pregnancy relaxation meditation",
+        "prenatal positive affirmations",
+        "pregnant women motivation videos",
+        "pregnancy emotional support",
+        "calming music for pregnancy",
+        "pregnancy mindfulness meditation",
+    ]
+
+    # Exercise video search queries by trimester
+    EXERCISE_QUERIES: Dict[int, List[str]] = {
+        1: [
+            "first trimester safe exercises",
+            "early pregnancy gentle workouts",
+            "prenatal yoga first trimester",
+            "pregnancy stretches first trimester",
+            "safe exercises 0-12 weeks pregnancy",
+        ],
+        2: [
+            "second trimester pregnancy exercises",
+            "prenatal yoga second trimester",
+            "pregnancy workout 13-28 weeks",
+            "pregnancy strength training second trimester",
+            "safe prenatal fitness second trimester",
+        ],
+        3: [
+            "third trimester safe exercises",
+            "late pregnancy gentle workouts",
+            "prenatal yoga third trimester",
+            "pregnancy exercises 28-40 weeks",
+            "pregnancy back pain relief exercises",
+        ],
+    }
 
 
+# Emergency Response Configuration
 class EmergencyConfig:
     """Emergency response configuration"""
 
-    # Emergency contact numbers
     BANGLADESH_EMERGENCY: str = "999"
     US_EMERGENCY: str = "911"
     MATERNAL_HOTLINE: str = "16263"
@@ -85,20 +160,20 @@ class EmergencyConfig:
     EMERGENCY_ALERT_HEADER: str = "🚨 **EMERGENCY ALERT ACTIVATED** 🚨"
 
     ALERT_STATUS_TEMPLATE: str = """📱 **ALERT STATUS:**
-✅ Healthcare provider notified
-✅ Emergency contacts alerted
-✅ Location services activated"""
+    ✅ Healthcare provider notified
+    ✅ Emergency contacts alerted
+    ✅ Location services activated"""
 
     IMMEDIATE_ACTIONS_TEMPLATE: str = """**IMMEDIATE ACTIONS:**
-1. Stay calm and follow the guidance above
-2. Call emergency services ({emergency_number}) if life-threatening
-3. Contact your healthcare provider immediately
-4. Have someone stay with you if possible"""
+    1. Stay calm and follow the guidance above
+    2. Call emergency services ({emergency_number}) if life-threatening
+    3. Contact your healthcare provider immediately
+    4. Have someone stay with you if possible"""
 
     EMERGENCY_HOTLINES_TEMPLATE: str = """**Emergency Hotlines:**
-- Emergency Services: {emergency_number}
-- Maternal Emergency Hotline: {maternal_hotline}
-- Your Healthcare Provider: [From your profile]"""
+    - Emergency Services: {emergency_number}
+    - Maternal Emergency Hotline: {maternal_hotline}
+    - Your Healthcare Provider: [From your profile]"""
 
     WARNING_FOOTER: str = (
         "⚠️ **DO NOT WAIT** - Seek immediate medical attention if symptoms worsen."
@@ -107,25 +182,24 @@ class EmergencyConfig:
     # System emergency fallback
     SYSTEM_EMERGENCY_RESPONSE: str = """🚨 **SYSTEM EMERGENCY RESPONSE** 🚨
 
-I'm experiencing a technical issue, but this is an EMERGENCY situation.
+    I'm experiencing a technical issue, but this is an EMERGENCY situation.
 
-**IMMEDIATE ACTIONS:**
-1. Call emergency services: 999
-2. Contact your healthcare provider immediately
-3. Go to the nearest hospital emergency department
-4. Have someone accompany you
+    **IMMEDIATE ACTIONS:**
+    1. Call emergency services: 999
+    2. Contact your healthcare provider immediately
+    3. Go to the nearest hospital emergency department
+    4. Have someone accompany you
 
-**DO NOT WAIT** - Seek immediate medical attention."""
+    **DO NOT WAIT** - Seek immediate medical attention."""
 
 
-# ============= Medical Constants =============
-
+# Medical Constants
 
 class MedicalConstants:
     """Medical-related constants and thresholds"""
 
     # Age limits
-    MIN_PATIENT_AGE: int = 12
+    MIN_PATIENT_AGE: int = 18
     MAX_PATIENT_AGE: int = 60
     DEFAULT_PATIENT_AGE: int = 25
 
@@ -158,9 +232,7 @@ class MedicalConstants:
     STANDARD_ANC_WEEKS: List[int] = [20, 26, 30, 34, 36, 38, 40]
 
 
-# ============= Intent Classification Constants =============
-
-
+# Intent Classification Constants
 class IntentTypes:
     """Available intent types"""
 
@@ -170,28 +242,28 @@ class IntentTypes:
     POSTPARTUM: str = "postpartum"
     PROFILE: str = "profile"
     HEALTH_QUERY: str = "health_query"
+    MOOD_SUPPORT: str = "mood_support"
+    EXERCISE: str = "exercise"
 
 
-# ============= Response Templates =============
-
-
+# Response Templates
 class ResponseTemplates:
     """Standard response templates"""
 
     # Profile display template
     PROFILE_TEMPLATE: str = """📋 **Your Complete Profile**
 
-**Basic Information:**
-- Age: {age}
-- Last Menstrual Period: {lmp_date}
-- Current Week: {current_week}
-- Trimester: {trimester}
+    **Basic Information:**
+    - Age: {age}
+    - Last Menstrual Period: {lmp_date}
+    - Current Week: {current_week}
+    - Trimester: {trimester}
 
-**Medical History:**
-{medical_history}
+    **Medical History:**
+    {medical_history}
 
-**Allergies:** {allergies}
-**Current Medications:** {medications}"""
+    **Allergies:** {allergies}
+    **Current Medications:** {medications}"""
 
     PROFILE_NO_PROFILE: str = (
         "No profile found. Please complete your profile setup first."
@@ -200,19 +272,19 @@ class ResponseTemplates:
     # Schedule template header
     SCHEDULE_HEADER: str = """🗓️ **Your ANC Schedule**
 
-**Current Status:** Week {current_week} of pregnancy
+    **Current Status:** Week {current_week} of pregnancy
 
-**Upcoming Appointments:**
+    **Upcoming Appointments:**
 
-"""
+    """
 
     SCHEDULE_VISIT_TEMPLATE: str = """**{index}. Week {week} Appointment**
-- **Date:** {date}
-- **Type:** {visit_type}
-- **Priority:** {priority}
-- **Notes:** {notes}
+    - **Date:** {date}
+    - **Type:** {visit_type}
+    - **Priority:** {priority}
+    - **Notes:** {notes}
 
-"""
+    """
 
     SCHEDULE_NEXT_VISIT: str = "\n🎯 **Next Visit:** Week {week} on {date}"
 
@@ -237,7 +309,7 @@ class ResponseTemplates:
     )
 
 
-# ============= Nutrition Constants =============
+# Nutrition Constants
 
 
 class NutritionConstants:
@@ -260,91 +332,92 @@ class NutritionConstants:
     }
 
 
-# ============= System Prompts =============
-
+# System Prompts
 
 class SystemPrompts:
     """System prompts for different agent types"""
 
     CONVERSATIONAL_HEALTH_AGENT: str = """You are MaatriCare, a compassionate maternal health assistant.
 
-Your role is to provide empathetic, personalized, and medically sound responses to pregnant women's concerns. You should:
+    Your role is to provide empathetic, personalized, and medically sound responses to pregnant women's concerns. You should:
 
-1. **Be Conversational & Empathetic**: Engage naturally, acknowledge feelings, and show understanding
-2. **Provide Context-Aware Advice**: Use patient's age, pregnancy week, and history to personalize responses  
-3. **Offer Practical Guidance**: Give specific, actionable advice appropriate to their pregnancy stage
-4. **Monitor Risk Appropriately**: Identify concerning symptoms and recommend when to seek care
-5. **Cultural Sensitivity**: Be mindful of Bangladeshi context and practices where relevant
+    1. **Be Conversational & Empathetic**: Engage naturally, acknowledge feelings, and show understanding
+    2. **Provide Context-Aware Advice**: Use patient's age, pregnancy week, and history to personalize responses  
+    3. **Offer Practical Guidance**: Give specific, actionable advice appropriate to their pregnancy stage
+    4. **Monitor Risk Appropriately**: Identify concerning symptoms and recommend when to seek care
+    5. **Cultural Sensitivity**: Be mindful of Bangladeshi context and practices where relevant
 
-For emotional concerns (sadness, anxiety, stress):
-- Validate their feelings as normal pregnancy experiences
-- Provide coping strategies and emotional support
-- Recommend when to seek mental health support
-- Engage in supportive conversation
+    For emotional concerns (sadness, anxiety, stress):
+    - Validate their feelings as normal pregnancy experiences
+    - Provide coping strategies and emotional support
+    - Recommend when to seek mental health support
+    - Engage in supportive conversation
 
-For physical symptoms:
-- Assess severity in context of pregnancy stage
-- Provide immediate relief suggestions when appropriate
-- Clearly state when medical attention is needed
-- Reference normal pregnancy changes vs concerning signs
+    For physical symptoms:
+    - Assess severity in context of pregnancy stage
+    - Provide immediate relief suggestions when appropriate
+    - Clearly state when medical attention is needed
+    - Reference normal pregnancy changes vs concerning signs
 
-Always maintain a warm, supportive tone while being medically responsible."""
+    Always maintain a warm, supportive tone while being medically responsible."""
 
     NUTRITION_SPECIALIST: str = """IGNORE ALL REASONING TEXT. Extract only nutrition request details and respond with this EXACT format:
 
-**Key Nutrients for Week [X]:**
-- Nutrient 1: specific benefit
-- Nutrient 2: specific benefit  
-- Nutrient 3: specific benefit
+    **Key Nutrients for Week [X]:**
+    - Nutrient 1: specific benefit
+    - Nutrient 2: specific benefit  
+    - Nutrient 3: specific benefit
 
-**Daily Meal Plan:**
-**Breakfast:** Specific meal (portion size)
-**Mid-Morning:** Snack (portion size)
-**Lunch:** Specific meal (portion size) 
-**Afternoon:** Snack (portion size)
-**Dinner:** Specific meal (portion size)
-**Before Bed:** Light snack (if needed)
+    **Daily Meal Plan:**
+    **Breakfast:** Specific meal (portion size)
+    **Mid-Morning:** Snack (portion size)
+    **Lunch:** Specific meal (portion size) 
+    **Afternoon:** Snack (portion size)
+    **Dinner:** Specific meal (portion size)
+    **Before Bed:** Light snack (if needed)
 
-**Essential Bangladeshi Foods:**
-- Food 1: benefit
-- Food 2: benefit
-- Food 3: benefit
-- Food 4: benefit
-- Food 5: benefit
+    **Essential Bangladeshi Foods:**
+    - Food 1: benefit
+    - Food 2: benefit
+    - Food 3: benefit
+    - Food 4: benefit
+    - Food 5: benefit
 
-**Foods to Avoid:**
-- Food 1: reason
-- Food 2: reason
-- Food 3: reason
+    **Foods to Avoid:**
+    - Food 1: reason
+    - Food 2: reason
+    - Food 3: reason
 
-**Practical Tips:**
-- Tip 1
-- Tip 2  
-- Tip 3
-- Tip 4
+    **Practical Tips:**
+    - Tip 1
+    - Tip 2  
+    - Tip 3
+    - Tip 4
 
-STOP. Do not add any other text."""
+    STOP. Do not add any other text."""
 
     EMERGENCY_SPECIALIST: str = """You are an emergency maternal care specialist. Provide ONLY immediate action steps.
 
-RESPONSE FORMAT:
-🚨 **EMERGENCY ACTION REQUIRED**
+    RESPONSE FORMAT:
+    🚨 **EMERGENCY ACTION REQUIRED**
 
-**Immediate Steps:**
-1. [First action]
-2. [Second action] 
-3. [Third action]
+    **Immediate Steps:**
+    1. [First action]
+    2. [Second action] 
+    3. [Third action]
 
-**Seek Emergency Care If:**
-- [Warning sign 1]
-- [Warning sign 2]
-- [Warning sign 3]
+    **Seek Emergency Care If:**
+    - [Warning sign 1]
+    - [Warning sign 2]
+    - [Warning sign 3]
 
-**Emergency Contacts:**
-- Emergency Services: 999
-- Maternal Hotline: 16263
+    **Emergency Contacts:**
+    - Emergency Services: 999
+    - Maternal Hotline: 16263
+    - National Helpline: 109
+    - Police Headquarters: 01320002001
 
-NO explanations or reasoning. Direct action steps only."""
+    NO explanations or reasoning. Direct action steps only."""
 
     SCHEDULE_COORDINATOR: str = """You are a maternal care schedule coordinator. You MUST return valid JSON only.
 
@@ -383,28 +456,65 @@ NO explanations or reasoning. Direct action steps only."""
 
     POSTPARTUM_COORDINATOR: str = """You are a postpartum care coordinator. Return ONLY valid JSON format.
 
-MANDATORY JSON FORMAT:
-{
-    "maternal_care": [
-        {
-            "week": 1,
-            "focus": "recovery monitoring", 
-            "activities": ["rest", "nutrition", "mental health check"],
-            "warning_signs": ["heavy bleeding", "fever", "severe pain"]
-        }
-    ],
-    "newborn_care": [
-        {
-            "week": 1,
-            "focus": "feeding and bonding",
-            "activities": ["breastfeeding support", "weight monitoring"],
-            "vaccinations": ["BCG", "Hepatitis B"]
-        }
-    ],
-    "cultural_practices": ["confinement period", "traditional foods", "family support"]
-}
+    MANDATORY JSON FORMAT:
+    {
+        "maternal_care": [
+            {
+                "week": 1,
+                "focus": "recovery monitoring", 
+                "activities": ["rest", "nutrition", "mental health check"],
+                "warning_signs": ["heavy bleeding", "fever", "severe pain"]
+            }
+        ],
+        "newborn_care": [
+            {
+                "week": 1,
+                "focus": "feeding and bonding",
+                "activities": ["breastfeeding support", "weight monitoring"],
+                "vaccinations": ["BCG", "Hepatitis B"]
+            }
+        ],
+        "cultural_practices": ["confinement period", "traditional foods", "family support"]
+    }
 
-NO text outside JSON. Return JSON only."""
+    NO text outside JSON. Return JSON only."""
+
+    MOOD_SUPPORT_SPECIALIST: str = """You are MaatriCare's emotional wellness specialist. 
+
+    When a pregnant woman expresses feelings of sadness, depression, anxiety, or emotional distress:
+
+    **IMPORTANT**: Always start your response with a warm, personal greeting like:
+    - "Dear beautiful mother," 
+    - "Sweet mama,"
+    - "Dear precious soul,"
+    - "Beautiful expecting mother,"
+    - "Dear wonderful mama-to-be,"
+
+    Then follow these guidelines:
+    1. **Validate & Normalize**: Acknowledge that their feelings are completely normal during pregnancy
+    2. **Provide Immediate Comfort**: Offer gentle, reassuring words and practical coping strategies
+    3. **Encourage Self-Care**: Suggest immediate mood-boosting activities they can do today
+    4. **Professional Support**: When appropriate, gently suggest speaking with healthcare providers
+    5. **YouTube Resources**: You will be provided with curated video links to include in your response
+
+    Your response should be warm, empathetic, and actionable. Include the provided YouTube videos as "Here are some videos that might help you feel better" with brief descriptions of what each offers.
+
+    Always maintain hope and remind them they're not alone in this journey."""
+
+    EXERCISE_SPECIALIST: str = """You are MaatriCare's prenatal fitness specialist.
+
+    When providing exercise advice for pregnant women:
+
+    1. **Safety First**: Always emphasize safety and listening to their body
+    2. **Trimester-Appropriate**: Tailor advice to their current pregnancy week/trimester
+    3. **Benefits Focus**: Explain how exercise helps with common pregnancy discomforts
+    4. **Modifications**: Provide clear modifications for pregnancy-specific needs
+    5. **Warning Signs**: Include when to stop exercising and contact healthcare provider
+    6. **YouTube Resources**: You will be provided with curated video links for safe prenatal exercises
+
+    Include the provided YouTube videos as "Here are some safe exercise videos for your current stage" with brief descriptions of what each video covers.
+
+    Always remind them to consult their healthcare provider before starting any new exercise routine."""
 
 
 # ============= Context Templates =============
@@ -414,18 +524,18 @@ class ContextTemplates:
     """Templates for building patient context"""
 
     PATIENT_CONTEXT_FULL: str = """Patient Context:
-- Age: {age} years old
-- Current pregnancy week: {current_week}
-- Trimester: {trimester}
-- Medical history: {medical_history}
-- Risk level: {risk_level}"""
+    - Age: {age} years old
+    - Current pregnancy week: {current_week}
+    - Trimester: {trimester}
+    - Medical history: {medical_history}
+    - Risk level: {risk_level}"""
 
     PATIENT_CONTEXT_WITH_ALLERGIES: str = """Patient Context:
-- Age: {age} years old
-- Current pregnancy week: {current_week}
-- Trimester: {trimester}
-- Medical history: {medical_history}
-- Allergies: {allergies}"""
+    - Age: {age} years old
+    - Current pregnancy week: {current_week}
+    - Trimester: {trimester}
+    - Medical history: {medical_history}
+    - Allergies: {allergies}"""
 
     PATIENT_CONTEXT_EMERGENCY: str = (
         "Age: {age}, Week: {current_week}, Trimester: {trimester}"
@@ -439,13 +549,13 @@ class ContextTemplates:
     )
 
     PROFILE_SUMMARY: str = """
-Patient Profile:
-- Age: {age}
-- Current Week: {current_week}
-- Trimester: {trimester}
-- Medical History: {medical_history}
-- Current Input: {current_input}
-"""
+    Patient Profile:
+    - Age: {age}
+    - Current Week: {current_week}
+    - Trimester: {trimester}
+    - Medical History: {medical_history}
+    - Current Input: {current_input}
+    """
 
 
 # ============= Output Processing =============
@@ -468,7 +578,6 @@ class OutputProcessors:
             r"^.*?(?=\{)",  # Remove everything before JSON starts
         ]
 
-        # Apply the first matching pattern
         cleaned_response = raw_response
         for pattern in reasoning_start_patterns:
             match = re.search(pattern, raw_response, re.DOTALL | re.IGNORECASE)
@@ -514,10 +623,7 @@ class OutputProcessors:
     @staticmethod
     def clean_nutrition_response(raw_response: str) -> str:
         """Clean nutrition response to ensure structured format only"""
-        # First apply universal cleaning
         cleaned = OutputProcessors.clean_all_llm_responses(raw_response)
-
-        # Then apply nutrition-specific rules
         lines = cleaned.split("\n")
         structured_lines = []
 
@@ -549,43 +655,42 @@ class OutputProcessors:
     def enforce_nutrition_structure(content: str, week: int) -> str:
         """Enforce exact nutrition response structure"""
         if not content.startswith("**Key Nutrients"):
-            # If response doesn't start correctly, return fallback structure
             return f"""**Key Nutrients for Week {week}:**
-- Folic acid: prevents birth defects
-- Iron: supports blood production
-- Calcium: builds strong bones
-- Protein: supports baby's growth
+            - Folic acid: prevents birth defects
+            - Iron: supports blood production
+            - Calcium: builds strong bones
+            - Protein: supports baby's growth
 
-**Daily Meal Plan:**
-**Breakfast:** Rice porridge with dal (1 bowl)
-**Mid-Morning:** Banana with yogurt (1 small cup)
-**Lunch:** Rice with fish curry and shak (1 plate)
-**Afternoon:** Boiled egg with crackers (1 egg, 2 crackers)
-**Dinner:** Dal with rice and vegetables (1 bowl each)
-**Before Bed:** Warm milk (1 glass)
+            **Daily Meal Plan:**
+            **Breakfast:** Rice porridge with dal (1 bowl)
+            **Mid-Morning:** Banana with yogurt (1 small cup)
+            **Lunch:** Rice with fish curry and shak (1 plate)
+            **Afternoon:** Boiled egg with crackers (1 egg, 2 crackers)
+            **Dinner:** Dal with rice and vegetables (1 bowl each)
+            **Before Bed:** Warm milk (1 glass)
 
-**Essential Bangladeshi Foods:**
-- Dal (lentils): high in protein and folate
-- Shak (leafy greens): rich in iron and vitamins
-- Hilsa fish: provides omega-3 fatty acids
-- Rice: main energy source
-- Seasonal fruits: vitamin C and fiber
+            **Essential Bangladeshi Foods:**
+            - Dal (lentils): high in protein and folate
+            - Shak (leafy greens): rich in iron and vitamins
+            - Hilsa fish: provides omega-3 fatty acids
+            - Rice: main energy source
+            - Seasonal fruits: vitamin C and fiber
 
-**Foods to Avoid:**
-- Raw fish: risk of infection
-- Unpasteurized dairy: bacterial contamination
-- Raw papaya: may cause contractions
+            **Foods to Avoid:**
+            - Raw fish: risk of infection
+            - Unpasteurized dairy: bacterial contamination
+            - Raw papaya: may cause contractions
 
-**Practical Tips:**
-- Eat small, frequent meals to manage nausea
-- Cook vegetables thoroughly for safety
-- Include variety of colors in meals
-- Stay hydrated with clean water"""
+            **Practical Tips:**
+            - Eat small, frequent meals to manage nausea
+            - Cook vegetables thoroughly for safety
+            - Include variety of colors in meals
+            - Stay hydrated with clean water"""
 
         return content
 
 
-# ============= Default Values =============
+# Default Values
 
 
 class DefaultValues:
@@ -610,9 +715,7 @@ class DefaultValues:
     KEEP_RECENT_HISTORY: int = 15
 
 
-# ============= Validation Constants =============
-
-
+# Validation Constants
 class ValidationRules:
     """Validation rules and patterns"""
 
@@ -627,7 +730,7 @@ class ValidationRules:
     JSON_END_CHAR: str = "}"
 
 
-# ============= Routing Configuration =============
+# Routing Configuration
 
 
 class RoutingConfig:
@@ -640,12 +743,14 @@ class RoutingConfig:
         IntentTypes.POSTPARTUM: "postpartum",
         IntentTypes.PROFILE: "profile",
         IntentTypes.HEALTH_QUERY: "health_query",
+        IntentTypes.MOOD_SUPPORT: "mood_support",
+        IntentTypes.EXERCISE: "exercise",
     }
 
     DEFAULT_ROUTE: str = "health_query"
 
 
-# ============= Message Templates =============
+# Message Templates
 
 
 class MessageTemplates:
@@ -665,10 +770,16 @@ class MessageTemplates:
 
     POSTPARTUM_HUMAN_MESSAGE: str = "Patient context: {context}"
 
+    MOOD_SUPPORT_HUMAN_MESSAGE: str = (
+        "Patient says: '{user_input}'\n\nContext: {context}\n\nYouTube Videos: {youtube_links}"
+    )
 
-# ============= Logging Constants =============
+    EXERCISE_HUMAN_MESSAGE: str = (
+        "Patient says: '{user_input}'\n\nContext: {context}\n\nYouTube Videos: {youtube_links}"
+    )
 
 
+# Logging Constants
 class LoggingConstants:
     """Constants for logging messages"""
 
@@ -696,9 +807,7 @@ class LoggingConstants:
     NO_MEDICAL_STATE_WARNING: str = "No medical state available for scheduling"
 
 
-# ============= Logging Configuration =============
-
-
+# Logging Config
 class LoggingConfig:
     """Logging configuration constants"""
 
@@ -727,10 +836,11 @@ class LoggingConfig:
     CONSOLE_LEVEL: str = "INFO"
 
 
-# ============= Export All Constants =============
+# Export All Constants
 
 __all__ = [
     "IntentKeywords",
+    "YouTubeConfig",
     "EmergencyConfig",
     "MedicalConstants",
     "IntentTypes",

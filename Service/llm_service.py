@@ -1,6 +1,8 @@
-from crewai import LLM
 import os
 from langchain_groq import ChatGroq
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # LangChain-compatible LLM for LangGraph
 langgraph_llm = ChatGroq(
