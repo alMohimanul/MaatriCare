@@ -1,9 +1,8 @@
 # 🤰 MaatriCare (মাতৃCare)
 
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![Streamlit](https://img.shields.io/badge/streamlit-1.28+-red.svg)](https://streamlit.io)
 [![LangChain](https://img.shields.io/badge/langchain-0.1+-green.svg)](https://langchain.com)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **MaatriCare** is an AI-powered maternal health assistant designed specifically for pregnant women in Bangladesh and Bengali-speaking communities. The application provides personalized pregnancy care guidance, health monitoring, and comprehensive support throughout the maternal journey.
 
@@ -11,7 +10,7 @@
 
 ### 🤖 AI-Powered Health Assistant
 - **Multi-Agent Architecture**: Specialized AI agents for different aspects of maternal care
-- **Conversational Interface**: Natural language interaction in both English and Bengali (বাংলা)
+- **Conversational Interface**: Natural language interaction in English.
 - **Personalized Recommendations**: Context-aware advice based on individual pregnancy profiles
 - **Risk Assessment**: WHO guidelines-based symptom analysis and risk evaluation
 
@@ -21,11 +20,6 @@
 - **Nutrition Planning**: Personalized meal plans featuring traditional Bangladeshi foods
 - **Postpartum Care**: Complete post-delivery care guidance for both mother and newborn
 - **Emergency Support**: 24/7 emergency response and critical symptom detection
-
-### 🌐 Bilingual Support
-- **Bengali (বাংলা)**: Complete interface and responses in Bengali
-- **English**: Full English language support
-- **Cultural Sensitivity**: Bangladesh-specific medical practices and dietary recommendations
 
 ### 📱 User-Friendly Interface
 - **Modern Web UI**: Clean, responsive Streamlit-based interface
@@ -47,17 +41,17 @@ The application uses LangGraph to orchestrate multiple specialized AI agents:
 7. **Emergency Response Agent**: Handles critical health situations
 
 ### Technical Stack
-- **Backend**: Python 3.8+, LangChain, LangGraph
+- **Backend**: Python 3.10+, LangChain, LangGraph
 - **Frontend**: Streamlit with custom CSS styling
-- **AI/ML**: Open-source LLM models, structured output parsing
+- **AI/ML**: Groq API for LLM capabilities
 - **State Management**: LangGraph state machines with memory persistence
 - **Logging**: Structured logging with comprehensive error handling
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Python 3.8 or higher
-- OpenAI API key (for AI functionality)
+- Python 3.10 or higher
+- GROQ API key (for AI functionality)
 - Git
 
 ### Installation
@@ -106,7 +100,9 @@ The application will start a Streamlit server, typically accessible at `http://l
 - The system automatically calculates current pregnancy week and trimester
 
 ### 2. Conversational Interface
-- Ask questions in natural language (English or Bengali)
+- Ask questions in natural language, e.g.:
+  - "What should I eat in my 24th week?"
+  - "I'm experiencing nausea, is this normal?"
 - Get personalized responses based on your pregnancy stage
 - Use quick action buttons for common requests
 
@@ -184,11 +180,6 @@ MaatriCare/
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## 📞 Support & Contact
-
-- **Issues**: [GitHub Issues](https://github.com/alMohimanul/MaatriCare/issues)
-- **Documentation**: [Wiki](https://github.com/alMohimanul/MaatriCare/wiki)
-- **Email**: [Your contact email]
 
 ## ⚠️ Medical Disclaimer
 
@@ -199,9 +190,6 @@ MaatriCare/
 - The application provides general guidance based on established medical guidelines
 - Individual medical needs may vary and require professional assessment
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 

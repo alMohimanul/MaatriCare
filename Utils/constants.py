@@ -1,4 +1,6 @@
-from typing import List, Dict, Tuple
+import json
+import re
+from typing import List, Dict, Tuple, Any
 
 
 class IntentKeywords:
@@ -656,38 +658,54 @@ class OutputProcessors:
         """Enforce exact nutrition response structure"""
         if not content.startswith("**Key Nutrients"):
             return f"""**Key Nutrients for Week {week}:**
-            - Folic acid: prevents birth defects
-            - Iron: supports blood production
-            - Calcium: builds strong bones
-            - Protein: supports baby's growth
+- Folic acid: prevents birth defects
+- Iron: supports blood production
+- Calcium: builds strong bones
+- Protein: supports baby's growth
 
-            **Daily Meal Plan:**
-            **Breakfast:** Rice porridge with dal (1 bowl)
-            **Mid-Morning:** Banana with yogurt (1 small cup)
-            **Lunch:** Rice with fish curry and shak (1 plate)
-            **Afternoon:** Boiled egg with crackers (1 egg, 2 crackers)
-            **Dinner:** Dal with rice and vegetables (1 bowl each)
-            **Before Bed:** Warm milk (1 glass)
+**Daily Meal Plan:**
+**Breakfast:** Rice porridge with dal (1 bowl)
+**Mid-Morning:** Banana with yogurt (1 small cup)
+**Lunch:** Rice with fish curry and shak (1 plate)
+**Afternoon:** Boiled egg with crackers (1 egg, 2 crackers)
+**Dinner:** Dal with rice and vegetables (1 bowl each)
+**Before Bed:** Warm milk (1 glass)
 
-            **Essential Bangladeshi Foods:**
-            - Dal (lentils): high in protein and folate
-            - Shak (leafy greens): rich in iron and vitamins
-            - Hilsa fish: provides omega-3 fatty acids
-            - Rice: main energy source
-            - Seasonal fruits: vitamin C and fiber
+**Essential Bangladeshi Foods:**
+- Dal (lentils): high in protein and folate
+- Shak (leafy greens): rich in iron and vitamins
+- Hilsa fish: provides omega-3 fatty acids
+- Rice: main energy source
+- Seasonal fruits: vitamin C and fiber
 
-            **Foods to Avoid:**
-            - Raw fish: risk of infection
-            - Unpasteurized dairy: bacterial contamination
-            - Raw papaya: may cause contractions
+**Foods to Avoid:**
+- Raw fish: risk of infection
+- High mercury fish: harmful to baby
+- Unpasteurized dairy: risk of listeria
 
-            **Practical Tips:**
-            - Eat small, frequent meals to manage nausea
-            - Cook vegetables thoroughly for safety
-            - Include variety of colors in meals
-            - Stay hydrated with clean water"""
+**Practical Tips:**
+- Eat small, frequent meals
+- Stay hydrated with water
+- Take prenatal vitamins as prescribed
+- Listen to your body's cravings"""
 
         return content
+
+    @staticmethod
+    def extract_json_from_response(response: str) -> Dict[str, Any]:
+        """Extract JSON from response text"""
+        try:
+            # Find JSON-like content
+            start = response.find("{")
+            end = response.rfind("}") + 1
+
+            if start != -1 and end > start:
+                json_str = response[start:end]
+                return json.loads(json_str)
+
+            return {}
+        except:
+            return {}
 
 
 # Default Values
