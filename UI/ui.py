@@ -5,32 +5,26 @@ import logging
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-# Initialize centralized logging first
 try:
     from Utils.logging_config import get_logger, setup_logging
 
-    # Check if logging is already initialized, if not, set it up
     if not logging.getLogger().handlers:
         setup_logging()
     logger = get_logger("MaatriCare.UI")
     logger.info("🖥️  MaatriCare UI Starting Up")
 except ImportError as e:
-    # Fallback to basic logging if centralized logging is not available
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
     logger.warning(f"Using basic logging as fallback: {e}")
 
-# Import the new LangGraph orchestrator
 from Agent.langgraph_orchestrator import (
     PatientContextManager,
     MaatriCareLangGraphNativeOrchestrator as MaatriCareLangGraphOrchestrator,
 )
 
-# Import output processor for cleaning responses
 from Utils.output_processors import OutputProcessors
 
 
-# NEW FEATURE: Enhanced error handling for UI
 def handle_ui_error(error: Exception, context: str = "operation") -> str:
     """Handle UI errors gracefully with user-friendly messages"""
     logger.error(f"UI Error in {context}: {str(error)}")
@@ -53,7 +47,6 @@ def handle_ui_error(error: Exception, context: str = "operation") -> str:
         "chat_processing": "এই মুহূর্তে আপনার বার্তা প্রক্রিয়া করতে আমার সমস্যা হচ্ছে। অনুগ্রহ করে আবার চেষ্টা করুন বা সহায়তার জন্য যোগাযোগ করুন।",
     }
 
-    # Get current language from session state, default to English
     current_lang = getattr(st.session_state, "language", "en")
     error_messages = error_messages_bn if current_lang == "bn" else error_messages_en
 
@@ -66,44 +59,53 @@ def handle_ui_error(error: Exception, context: str = "operation") -> str:
     return error_messages.get(context, default_message)
 
 
-# NEW FEATURE: Enhanced user feedback
-def show_loading_message(operation: str):
-    """Show appropriate loading message based on operation"""
+def show_loading_message(operation: str, agent_type: str = None):
+    """Show appropriate loading message based on operation with agent information"""
     loading_messages_en = {
-        "profile": "Setting up your personalized maternal care profile...",
-        "risk": "Analyzing your symptoms using WHO maternal health guidelines...",
-        "schedule": "Calculating your optimal ANC appointment schedule...",
-        "nutrition": "Preparing personalized nutrition recommendations...",
-        "teleconsult": "Evaluating your teleconsultation needs...",
-        "health": "Searching for reliable health information...",
-        "response": "Processing your request...",
+        "orchestrator": "🤖 মাতৃCare Assistant is thinking...",
+        "response": "💬 মাতৃCare Assistant is replying...",
+        "emergency": "🚨 মাতৃCare Assistant is prioritizing your safety...",
+        "profile": "🧬 Setting up your care profile...",
+        "risk": "🧠 Checking your symptoms...",
+        "schedule": "📅 Planning your ANC schedule...",
+        "nutrition": "🥗 Preparing your personalized meal plan...",
+        "teleconsult": "📞 Evaluating if a doctor’s consult is needed...",
+        "health": "🔎 Finding reliable health information...",
+        "exercise": "🤸‍♀️ Recommending safe pregnancy workouts...",
+        "mood": "💝 Offering emotional support...",
+        "general": "🩺 Reviewing your health details...",
     }
 
     loading_messages_bn = {
-        "profile": "আপনার ব্যক্তিগতকৃত মাতৃযত্ন প্রোফাইল সেটআপ করা হচ্ছে...",
-        "risk": "WHO মাতৃস্বাস্থ্য নির্দেশিকা ব্যবহার করে আপনার লক্ষণ বিশ্লেষণ করা হচ্ছে...",
-        "schedule": "আপনার সর্বোত্তম ANC অ্যাপয়েন্টমেন্ট সময়সূচী গণনা করা হচ্ছে...",
-        "nutrition": "ব্যক্তিগতকৃত পুষ্টি সুপারিশ প্রস্তুত করা হচ্ছে...",
-        "teleconsult": "আপনার টেলিকনসালটেশন প্রয়োজন মূল্যায়ন করা হচ্ছে...",
-        "health": "নির্ভরযোগ্য স্বাস্থ্য তথ্য অনুসন্ধান করা হচ্ছে...",
-        "response": "আপনার অনুরোধ প্রক্রিয়া করা হচ্ছে...",
+        "profile": "🔄 আপনার ব্যক্তিগতকৃত মাতৃযত্ন প্রোফাইল সেটআপ করা হচ্ছে...",
+        "risk": "🔍 WHO মাতৃস্বাস্থ্য নির্দেশিকা ব্যবহার করে আপনার লক্ষণ বিশ্লেষণ করা হচ্ছে...",
+        "schedule": "📅 আপনার সর্বোত্তম ANC অ্যাপয়েন্টমেন্ট সময়সূচী গণনা করা হচ্ছে...",
+        "nutrition": "🥗 পুষ্টি এজেন্ট: ব্যক্তিগতকৃত সুপারিশ প্রস্তুত করা হচ্ছে...",
+        "teleconsult": "📞 আপনার টেলিকনসালটেশন প্রয়োজন মূল্যায়ন করা হচ্ছে...",
+        "health": "🔎 নির্ভরযোগ্য স্বাস্থ্য তথ্য অনুসন্ধান করা হচ্ছে...",
+        "response": "💬 আপনার অনুরোধ প্রক্রিয়া করা হচ্ছে...",
+        "exercise": "🤸‍♀️ ব্যায়াম এজেন্ট: আপনার জন্য নিরাপদ কার্যকলাপ খুঁজে বের করা হচ্ছে...",
+        "mood": "💝 আবেগজনিত সহায়তা এজেন্ট: যত্নশীল নির্দেশনা প্রস্তুত করা হচ্ছে...",
+        "emergency": "🚨 জরুরি এজেন্ট: আপনার নিরাপত্তাকে অগ্রাধিকার দেওয়া হচ্ছে...",
+        "general": "🩺 স্বাস্থ্য এজেন্ট: ব্যাপক তথ্য সংগ্রহ করা হচ্ছে...",
+        "orchestrator": "🤖 মাতৃCare: আপনার ব্যক্তিগতকৃত প্রতিক্রিয়া তৈরি করা হচ্ছে...",
     }
 
-    # Get current language from session state, default to English
     current_lang = getattr(st.session_state, "language", "en")
     loading_messages = (
         loading_messages_bn if current_lang == "bn" else loading_messages_en
     )
+
+    if agent_type and agent_type in loading_messages:
+        return loading_messages[agent_type]
 
     return loading_messages.get(
         operation, loading_messages.get("response", "Processing...")
     )
 
 
-# NEW FEATURE: Weekly development information
 def get_weekly_development_info(week: int) -> dict:
     """Get week-specific baby development information"""
-    # English version
     weekly_info_en = {
         4: {
             "size": "poppy seed 🌱",
@@ -202,7 +204,6 @@ def get_weekly_development_info(week: int) -> dict:
         },
     }
 
-    # Bengali version
     weekly_info_bn = {
         4: {
             "size": "পোস্ত দানা 🌱",
@@ -301,15 +302,12 @@ def get_weekly_development_info(week: int) -> dict:
         },
     }
 
-    # Get current language from session state, default to English
     current_lang = getattr(st.session_state, "language", "en")
     weekly_info = weekly_info_bn if current_lang == "bn" else weekly_info_en
 
-    # Find closest week if exact week not found
     if week in weekly_info:
         return weekly_info[week]
 
-    # Find the closest week that has information
     available_weeks = sorted(weekly_info.keys())
     closest_week = min(available_weeks, key=lambda x: abs(x - week))
 
@@ -526,44 +524,6 @@ st.markdown(
         box-shadow: 0 4px 12px rgba(255, 105, 180, 0.4);
         color: #222222;
     }
-    
-    /* Language toggle button styling */
-    div[data-testid="stButton"] button[kind="secondary"] {
-        background: linear-gradient(135deg, #21262d, #30363d) !important;
-        color: #e6edf3 !important;
-        border: 1px solid #30363d !important;
-        border-radius: 8px !important;
-        font-size: 14px !important;
-        padding: 8px 16px !important;
-        font-weight: 500 !important;
-        transition: all 0.2s ease !important;
-    }
-    
-    div[data-testid="stButton"] button[kind="secondary"]:hover {
-        background: linear-gradient(135deg, #30363d, #3fb950) !important;
-        border-color: #3fb950 !important;
-        transform: translateY(-1px) !important;
-    }
-    
-    /* Top right language toggle specific styling */
-    div[data-testid="column"]:last-child div[data-testid="stButton"] button {
-        background: linear-gradient(135deg, #2d1b69, #7c3aed) !important;
-        color: #ffffff !important;
-        border: 1px solid #7c3aed !important;
-        border-radius: 20px !important;
-        font-size: 12px !important;
-        padding: 6px 12px !important;
-        font-weight: 600 !important;
-        min-height: 32px !important;
-        width: auto !important;
-        float: right !important;
-    }
-    
-    div[data-testid="column"]:last-child div[data-testid="stButton"] button:hover {
-        background: linear-gradient(135deg, #5b21b6, #a855f7) !important;
-        border-color: #a855f7 !important;
-        transform: translateY(-1px) scale(1.02) !important;
-        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3) !important;
     }
     
     /* Form styling */
@@ -639,7 +599,7 @@ st.markdown(
     
     .sidebar-button {
         background: #21262d !important;
-        color: #e6edf3 !important;
+        color: red !important;
         border: 1px solid #30363d !important;
         border-radius: 8px !important;
         padding: 12px 16px !important;
@@ -654,6 +614,28 @@ st.markdown(
         background: #30363d !important;
         border-color: #3fb950 !important;
         transform: translateY(-1px) !important;
+    }
+    
+    /* Sidebar specific button overrides */
+    div[data-testid="stSidebar"] .stButton > button {
+        background: #21262d !important;
+        color: #e6edf3 !important;
+        border: 1px solid #30363d !important;
+        border-radius: 8px !important;
+        padding: 12px 16px !important;
+        margin: 4px 0 !important;
+        width: 100% !important;
+        text-align: left !important;
+        font-size: 14px !important;
+        transition: all 0.2s ease !important;
+        box-shadow: none !important;
+    }
+    
+    div[data-testid="stSidebar"] .stButton > button:hover {
+        background: #30363d !important;
+        border-color: #3fb950 !important;
+        transform: translateY(-1px) !important;
+        box-shadow: none !important;
     }
     
     /* Header styling */
@@ -780,6 +762,136 @@ st.markdown(
         color: #f85149 !important;
     }
     
+    /* Enhanced markdown styling for structured responses */
+    .alert-header {
+        background: linear-gradient(135deg, #dc2626, #ef4444);
+        color: #ffffff;
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin: 12px 0;
+        font-weight: 600;
+        border-left: 4px solid #b91c1c;
+        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+    }
+    
+    .alert-header .emoji {
+        font-size: 18px;
+        margin-right: 8px;
+    }
+    
+    .section-header {
+        color: #ff69b4 !important;
+        font-weight: 600 !important;
+        font-size: 16px !important;
+        margin: 16px 0 8px 0 !important;
+        padding: 8px 0 !important;
+        border-bottom: 2px solid rgba(255, 105, 180, 0.3) !important;
+    }
+    
+    .emergency-header {
+        color: #dc2626 !important;
+        background: rgba(220, 38, 38, 0.1) !important;
+        padding: 8px 12px !important;
+        border-radius: 6px !important;
+        border-left: 4px solid #dc2626 !important;
+        margin: 12px 0 !important;
+        font-weight: 700 !important;
+    }
+    
+    .nutrition-header {
+        color: #059669 !important;
+        background: rgba(5, 150, 105, 0.1) !important;
+        padding: 8px 12px !important;
+        border-radius: 6px !important;
+        border-left: 4px solid #059669 !important;
+        margin: 12px 0 !important;
+        font-weight: 600 !important;
+    }
+    
+    .exercise-header {
+        color: #7c3aed !important;
+        background: rgba(124, 58, 237, 0.1) !important;
+        padding: 8px 12px !important;
+        border-radius: 6px !important;
+        border-left: 4px solid #7c3aed !important;
+        margin: 12px 0 !important;
+        font-weight: 600 !important;
+    }
+    
+    .tips-header {
+        color: #ea580c !important;
+        background: rgba(234, 88, 12, 0.1) !important;
+        padding: 8px 12px !important;
+        border-radius: 6px !important;
+        border-left: 4px solid #ea580c !important;
+        margin: 12px 0 !important;
+        font-weight: 600 !important;
+    }
+    
+    .emergency-item {
+        color: #dc2626 !important;
+        background: rgba(220, 38, 38, 0.05) !important;
+        padding: 6px 8px !important;
+        margin: 4px 0 !important;
+        border-radius: 4px !important;
+        border-left: 3px solid #dc2626 !important;
+        font-weight: 500 !important;
+    }
+    
+    .nutrition-item {
+        color: #059669 !important;
+        background: rgba(5, 150, 105, 0.05) !important;
+        padding: 6px 8px !important;
+        margin: 4px 0 !important;
+        border-radius: 4px !important;
+        border-left: 3px solid #059669 !important;
+    }
+    
+    .exercise-item {
+        color: #7c3aed !important;
+        background: rgba(124, 58, 237, 0.05) !important;
+        padding: 6px 8px !important;
+        margin: 4px 0 !important;
+        border-radius: 4px !important;
+        border-left: 3px solid #7c3aed !important;
+    }
+    
+    .meal-item {
+        background: rgba(255, 105, 180, 0.1) !important;
+        color: #e6edf3 !important;
+        padding: 8px 12px !important;
+        margin: 6px 0 !important;
+        border-radius: 6px !important;
+        border-left: 3px solid #ff69b4 !important;
+        font-weight: 500 !important;
+    }
+    
+    .assistant-message-content h3 {
+        margin: 16px 0 8px 0 !important;
+        padding: 0 !important;
+    }
+    
+    .assistant-message-content ul {
+        margin: 8px 0 16px 0 !important;
+        padding-left: 0 !important;
+    }
+    
+    .assistant-message-content li {
+        list-style: none !important;
+        margin: 6px 0 !important;
+        padding: 6px 8px !important;
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-radius: 4px !important;
+        border-left: 2px solid #ff69b4 !important;
+    }
+    
+    /* Enhanced emphasis styling */
+    .assistant-message-content em {
+        color: #ff69b4 !important;
+        font-style: italic !important;
+        font-weight: 500 !important;
+    }
+    
     /* Link styling for YouTube videos and other links */
     .assistant-message-content a {
         color: #58a6ff !important;
@@ -828,83 +940,6 @@ st.markdown(
 
 st.set_page_config(page_title="🤰 মাতৃCare", layout="wide", initial_sidebar_state="auto")
 
-# Language support dictionary
-LANGUAGES = {
-    "en": {
-        "app_subtitle": "Your AI-powered maternal health assistant",
-        "basic_info": "Basic Information",
-        "lmp_label": "Last Menstrual Period (LMP) *",
-        "lmp_help": "The first day of your last menstrual period",
-        "age_label": "Age *",
-        "age_help": "Your current age",
-        "medical_history_label": "Medical History (Optional)",
-        "medical_history_placeholder": "Any relevant medical conditions, previous pregnancies, allergies, etc.",
-        "medical_history_help": "This information helps us provide better personalized recommendations",
-        "create_profile_btn": "Create My Profile",
-        "profile_created_success": "✅ Profile created successfully! Welcome to Maatri Care!",
-        "fill_required_fields": "⚠️ Please fill in all required fields (LMP and Age) to continue.",
-        "what_happening_week": "What's Happening This Week (Week {}):",
-        "baby_size": "Your baby is now the size of a **{}**",
-        "development": "**Development:** {}",
-        "common_symptoms": "**Common symptoms:** {}",
-        "feel_free_ask": "Feel free to ask me anything about your pregnancy journey!",
-        "your_profile": "Your Profile",
-        "current_week": "Current Week:",
-        "age": "Age:",
-        "years": "years",
-        "lmp": "LMP:",
-        "quick_actions": "Quick Actions",
-        "view_full_profile": "📋 View Full Profile",
-        "next_appointment": "🗓 Next Appointment",
-        "nutrition_advice": "🥗 Nutrition Advice",
-        "teleconsultation": "📞 Teleconsultation",
-        "postpartum_care": "🏥 Postpartum Care",
-        "welcome_title": 'Hello! I\'m your <span class="maatricare-brand">মাতৃCare</span> assistant',
-        "welcome_subtitle": "I'm here to help you with your pregnancy journey. You can ask me about:<br>• Pregnancy symptoms and health concerns<br>• Appointment scheduling and reminders<br>• Nutrition and lifestyle advice<br>• General pregnancy information<br><br>How can I help you today?",
-        "chat_input_placeholder": "Type your message here...",
-        "assistant_label": "মাতৃCare Assistant",
-        "user_label": "You",
-        "language_toggle": "Language / ভাষা",
-    },
-    "bn": {
-        "app_subtitle": "আপনার AI চালিত মাতৃস্বাস্থ্য সহায়ক",
-        "basic_info": "মৌলিক তথ্য",
-        "lmp_label": "শেষ মাসিক (LMP) *",
-        "lmp_help": "আপনার শেষ মাসিকের প্রথম দিন",
-        "age_label": "বয়স *",
-        "age_help": "আপনার বর্তমান বয়স",
-        "medical_history_label": "চিকিৎসার ইতিহাস (ঐচ্ছিক)",
-        "medical_history_placeholder": "কোনো প্রাসঙ্গিক চিকিৎসা অবস্থা, পূর্ববর্তী গর্ভাবস্থা, এলার্জি ইত্যাদি।",
-        "medical_history_help": "এই তথ্য আমাদের আরও ভাল ব্যক্তিগতকৃত সুপারিশ প্রদান করতে সহায়তা করে",
-        "create_profile_btn": "আমার প্রোফাইল তৈরি করুন",
-        "profile_created_success": "✅ প্রোফাইল সফলভাবে তৈরি হয়েছে! মাতৃCare-এ স্বাগতম!",
-        "fill_required_fields": "⚠️ অনুগ্রহ করে সমস্ত প্রয়োজনীয় ক্ষেত্র (LMP এবং বয়স) পূরণ করুন।",
-        "what_happening_week": "এই সপ্তাহে কি হচ্ছে (সপ্তাহ {}):",
-        "baby_size": "আপনার শিশু এখন একটি **{}** এর আকারের",
-        "development": "**বিকাশ:** {}",
-        "common_symptoms": "**সাধারণ লক্ষণসমূহ:** {}",
-        "feel_free_ask": "আপনার গর্ভাবস্থার যাত্রা সম্পর্কে আমাকে যেকোনো কিছু জিজ্ঞাসা করতে পারেন!",
-        "your_profile": "আপনার প্রোফাইল",
-        "current_week": "বর্তমান সপ্তাহ:",
-        "age": "বয়স:",
-        "years": "বছর",
-        "lmp": "LMP:",
-        "quick_actions": "দ্রুত কার্যক্রম",
-        "view_full_profile": "📋 সম্পূর্ণ প্রোফাইল দেখুন",
-        "next_appointment": "🗓 পরবর্তী অ্যাপয়েন্টমেন্ট",
-        "nutrition_advice": "🥗 পুষ্টি পরামর্শ",
-        "teleconsultation": "📞 টেলিকনসালটেশন",
-        "postpartum_care": "🏥 প্রসবোত্তর যত্ন",
-        "welcome_title": 'হ্যালো! আমি আপনার <span class="maatricare-brand">মাতৃCare</span> সহায়ক',
-        "welcome_subtitle": "আমি আপনার গর্ভাবস্থার যাত্রায় সাহায্য করতে এখানে আছি। আপনি আমাকে জিজ্ঞাসা করতে পারেন:<br>• গর্ভাবস্থার লক্ষণ এবং স্বাস্থ্য উদ্বেগ<br>• অ্যাপয়েন্টমেন্ট সময়সূচী এবং অনুস্মারক<br>• পুষ্টি এবং জীবনযাত্রার পরামর্শ<br>• সাধারণ গর্ভাবস্থার তথ্য<br><br>আজ আমি আপনাকে কীভাবে সাহায্য করতে পারি?",
-        "chat_input_placeholder": "এখানে আপনার বার্তা টাইপ করুন...",
-        "assistant_label": "মাতৃCare সহায়ক",
-        "user_label": "আপনি",
-        "language_toggle": "Language / ভাষা",
-    },
-}
-
-# Initialize session state
 if "context" not in st.session_state:
     st.session_state.context = PatientContextManager()
 if "orchestrator" not in st.session_state:
@@ -913,23 +948,17 @@ if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 if "last_processed" not in st.session_state:
     st.session_state.last_processed = None
-if "language" not in st.session_state:
-    st.session_state.language = "en"  # Default language is English
-
-
-# Function to get localized text
-def get_text(key):
-    return LANGUAGES[st.session_state.language].get(key, key)
 
 
 def simple_markdown_to_html(text):
-    """Convert basic markdown to HTML for better styling control"""
+    """Convert basic markdown to HTML for better styling control with enhanced formatting"""
     import re
 
     # Convert **text** to <strong>text</strong>
     text = re.sub(r"\*\*(.*?)\*\*", r"<strong>\1</strong>", text)
 
-    # Handle markdown-style links [text](url) first - this is our primary format now
+    text = re.sub(r"\*(.*?)\*", r"<em>\1</em>", text)
+
     text = re.sub(
         r"\[([^\]]+)\]\((https?://[^\)]+)\)",
         lambda m: f'<a href="{m.group(2)}" target="_blank" rel="noopener noreferrer">{m.group(1)}</a>',
@@ -943,39 +972,111 @@ def simple_markdown_to_html(text):
         text,
     )
 
-    # Handle remaining bare URLs only if not already converted
     text = re.sub(
         r'(?<!href=")(?<!">)(https?://[^\s\n<>"]+)',
         lambda m: f'<a href="{m.group(1)}" target="_blank" rel="noopener noreferrer">{m.group(1)}</a>',
         text,
     )
 
-    # Convert lines starting with - to <li> items
+    text = re.sub(
+        r"^(🚨.*?)\*\*(.*?)\*\*",
+        r'<div class="alert-header"><span class="emoji">\1</span><strong>\2</strong></div>',
+        text,
+        flags=re.MULTILINE,
+    )
+
+    text = re.sub(
+        r"^([🥗🤸‍♀️💝📅🩺💬🔍📞🏥📋].*?)$",
+        r'<div class="section-header">\1</div>',
+        text,
+        flags=re.MULTILINE,
+    )
+
+    # Convert lines starting with - to <li> items and handle nested structure
     lines = text.split("\n")
     html_lines = []
     in_list = False
+    current_section = None
 
     for line in lines:
-        line = line.strip()
-        if line.startswith("• "):
-            if not in_list:
-                html_lines.append("<ul>")
-                in_list = True
-            html_lines.append(f"<li>{line[2:]}</li>")
-        elif line.startswith("- "):
-            if not in_list:
-                html_lines.append("<ul>")
-                in_list = True
-            html_lines.append(f"<li>{line[2:]}</li>")
-        else:
+        line_stripped = line.strip()
+
+        # Handle section headers (lines with **text** that aren't in lists)
+        if (
+            line_stripped.startswith("**")
+            and line_stripped.endswith("**")
+            and not in_list
+        ):
             if in_list:
                 html_lines.append("</ul>")
                 in_list = False
-            if line:
-                html_lines.append(f"<p>{line}</p>")
+
+            header_text = line_stripped[2:-2]  # Remove ** markers
+
+            # Special styling for different types of headers
+            if any(
+                keyword in header_text.lower()
+                for keyword in ["emergency", "urgent", "alert"]
+            ):
+                html_lines.append(f'<h3 class="emergency-header">{header_text}</h3>')
+            elif any(
+                keyword in header_text.lower()
+                for keyword in ["nutrition", "meal", "food"]
+            ):
+                html_lines.append(f'<h3 class="nutrition-header">{header_text}</h3>')
+            elif any(
+                keyword in header_text.lower()
+                for keyword in ["exercise", "activity", "safety"]
+            ):
+                html_lines.append(f'<h3 class="exercise-header">{header_text}</h3>')
+            elif any(
+                keyword in header_text.lower()
+                for keyword in ["tips", "important", "guidelines"]
+            ):
+                html_lines.append(f'<h3 class="tips-header">{header_text}</h3>')
+            else:
+                html_lines.append(f'<h3 class="section-header">{header_text}</h3>')
+
+            current_section = header_text.lower()
+            continue
+
+        # Handle list items
+        if line_stripped.startswith("• ") or line_stripped.startswith("- "):
+            if not in_list:
+                html_lines.append("<ul>")
+                in_list = True
+
+            list_content = line_stripped[2:]  # Remove bullet point
+
+            # Style list items based on current section
+            if current_section and "emergency" in current_section:
+                html_lines.append(f'<li class="emergency-item">{list_content}</li>')
+            elif current_section and "nutrition" in current_section:
+                html_lines.append(f'<li class="nutrition-item">{list_content}</li>')
+            elif current_section and "exercise" in current_section:
+                html_lines.append(f'<li class="exercise-item">{list_content}</li>')
+            else:
+                html_lines.append(f"<li>{list_content}</li>")
+        else:
+            # Close list if we're leaving list items
+            if in_list:
+                html_lines.append("</ul>")
+                in_list = False
+
+            # Handle regular paragraphs
+            if line_stripped:
+                # Check for meal plan items (Breakfast:, Lunch:, etc.)
+                if re.match(
+                    r"^(Breakfast|Lunch|Dinner|Mid-Morning|Afternoon|Before Bed):",
+                    line_stripped,
+                ):
+                    html_lines.append(f'<div class="meal-item">{line_stripped}</div>')
+                else:
+                    html_lines.append(f"<p>{line_stripped}</p>")
             else:
                 html_lines.append("<br>")
 
+    # Close any remaining list
     if in_list:
         html_lines.append("</ul>")
 
@@ -984,25 +1085,12 @@ def simple_markdown_to_html(text):
 
 ctx = st.session_state.context
 
-# --- Profile Setup Screen (Only shown when no profile exists) ---
 if ctx.state.get("profile") is None:
-    # Language toggle in top right corner
-    col_header1, col_header2, col_header3 = st.columns([2, 1, 1])
-    with col_header3:
-        current_lang_display = (
-            "English" if st.session_state.language == "en" else "বাংলা"
-        )
-        if st.button(f"🌐 {current_lang_display}", key="lang_toggle_profile"):
-            st.session_state.language = (
-                "bn" if st.session_state.language == "en" else "en"
-            )
-            st.rerun()
-
     st.markdown(
         f"""
         <div class="app-header" style="margin-top: 20px;">
             <h1 class="app-title maatricare-brand">🤰 মাতৃCare</h1>
-            <p class="app-subtitle">{get_text("app_subtitle")}</p>
+            <p class="app-subtitle">Your trusted pregnancy companion for maternal and child health</p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -1013,26 +1101,26 @@ if ctx.state.get("profile") is None:
         with col2:
 
             with st.form("profile_form", clear_on_submit=False):
-                st.markdown(f"### {get_text('basic_info')}")
+                st.markdown(f"### Basic Information")
                 lmp = st.date_input(
-                    get_text("lmp_label"),
-                    help=get_text("lmp_help"),
+                    "Last Menstrual Period (LMP)",
+                    help="This helps calculate your pregnancy stage",
                 )
                 age = st.number_input(
-                    get_text("age_label"),
+                    "Age",
                     min_value=18,
                     max_value=60,
                     step=1,
-                    help=get_text("age_help"),
+                    help="Your current age for health planning",
                 )
                 history = st.text_area(
-                    get_text("medical_history_label"),
-                    placeholder=get_text("medical_history_placeholder"),
-                    help=get_text("medical_history_help"),
+                    "Medical History (Optional)",
+                    placeholder="Any relevant medical conditions, surgeries, or health concerns",
+                    help="Share any important health information for personalized advice",
                 )
 
                 submitted = st.form_submit_button(
-                    get_text("create_profile_btn"), use_container_width=True
+                    "Create Profile", use_container_width=True
                 )
 
                 if submitted and lmp and age:
@@ -1062,13 +1150,20 @@ if ctx.state.get("profile") is None:
                                 f"Profile created successfully for patient age {age}"
                             )
 
-                        st.success(get_text("profile_created_success"))
+                        st.success(
+                            "Profile created successfully! Let's start your health journey together."
+                        )
 
                         # Add welcome interaction to chat history for better UX
                         current_week = "unknown"
                         week_number = 0
                         if ctx.state.get("medical_state"):
-                            current_week = ctx.state["medical_state"].current_week
+                            medical_state = ctx.state["medical_state"]
+                            current_week = (
+                                medical_state.get("current_week", 0)
+                                if medical_state
+                                else 0
+                            )
                             # Extract numeric week if it's a string like "Week 9"
                             if isinstance(
                                 current_week, str
@@ -1084,14 +1179,14 @@ if ctx.state.get("profile") is None:
                         weekly_info = ""
                         if week_number > 0:
                             dev_info = get_weekly_development_info(week_number)
-                            weekly_info = f"""**{get_text("what_happening_week").format(week_number)}**
-                            • {get_text("baby_size").format(dev_info['size'])}
-                            • {get_text("development").format(dev_info['development'])}
-                            • {get_text("common_symptoms").format(dev_info['symptoms'])}"""
+                            weekly_info = f"""**What's happening in Week {week_number}:**
+                            • Baby size: {dev_info['size']}
+                            • Development: {dev_info['development']}
+                            • Common symptoms: {dev_info['symptoms']}"""
 
                         welcome_msg = f"""{weekly_info}
 
-                        {get_text("feel_free_ask")}"""
+                        Feel free to ask me anything about your pregnancy, nutrition, exercise, or any concerns you have. I'm here to help! 💕"""
 
                         st.session_state.chat_history = [("assistant", welcome_msg)]
                         st.rerun()
@@ -1102,21 +1197,12 @@ if ctx.state.get("profile") is None:
                         logger.error(f"Profile creation failed: {str(e)}")
 
                 elif submitted:
-                    st.error(get_text("fill_required_fields"))
+                    st.error(
+                        "Please fill in all required fields (LMP and Age) to create your profile."
+                    )
 
     st.stop()
 
-# --- Main Chat Interface (Only shown when profile exists) ---
-
-# Language toggle in top right corner for chat interface
-col_chat_header1, col_chat_header2, col_chat_header3 = st.columns([2, 1, 1])
-with col_chat_header3:
-    current_lang_display = "English" if st.session_state.language == "en" else "বাংলা"
-    if st.button(f"🌐 {current_lang_display}", key="lang_toggle_chat"):
-        st.session_state.language = "bn" if st.session_state.language == "en" else "en"
-        st.rerun()
-
-# Header for chat interface
 st.markdown(
     """
     <div class="app-header chat-header" style="margin-top: 20px;">
@@ -1132,95 +1218,75 @@ with st.sidebar:
     if ctx.state.get("profile"):
         profile = ctx.state["profile"]
         medical = ctx.state.get("medical_state")
-        current_week = medical.current_week if medical else "?"
+        current_week = medical.get("current_week", "?") if medical else "?"
 
         st.markdown(
             f"""
             <div class="profile-box">
-                <h3>{get_text("your_profile")}</h3>
+                <h3>Your Profile</h3>
                 <div class="profile-item">
-                    <span class="profile-label">{get_text("current_week")}</span>
+                    <span class="profile-label">Current Week:</span>
                     <span class="profile-value">{current_week}</span>
                 </div>
                 <div class="profile-item">
-                    <span class="profile-label">{get_text("age")}</span>
-                    <span class="profile-value">{profile.age} {get_text("years")}</span>
+                    <span class="profile-label">Age:</span>
+                    <span class="profile-value">{profile.get("age", "?")} years</span>
                 </div>
                 <div class="profile-item">
-                    <span class="profile-label">{get_text("lmp")}</span>
-                    <span class="profile-value">{profile.lmp_date}</span>
+                    <span class="profile-label">LMP:</span>
+                    <span class="profile-value">{profile.get("lmp_date", "?")}</span>
                 </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-    st.markdown(f"### {get_text('quick_actions')}")
+    st.markdown(f"### Quick Actions")
 
-    if st.button(
-        get_text("view_full_profile"), key="profile_btn", use_container_width=True
-    ):
+    if st.button("📋 View Full Profile", key="profile_btn", use_container_width=True):
         st.session_state.chat_history.append(("user", "Show my complete profile"))
 
         # Use LangGraph orchestrator for profile display
         query = "show my profile"
-        if st.session_state.language == "bn":
-            query += " (Please respond in Bengali/বাংলা language)"
         resp = st.session_state.orchestrator.process_query(query)
         resp = OutputProcessors.clean_all_llm_responses(resp)
         st.session_state.chat_history.append(("assistant", resp))
         st.rerun()
 
-    if st.button(
-        get_text("next_appointment"), key="appointment_btn", use_container_width=True
-    ):
+    if st.button("🗓 Next Appointment", key="appointment_btn", use_container_width=True):
         st.session_state.chat_history.append(("user", "When is my next appointment?"))
         query = "show my next appointment schedule"
-        if st.session_state.language == "bn":
-            query += " (Please respond in Bengali/বাংলা language)"
         resp = st.session_state.orchestrator.process_query(query)
         resp = OutputProcessors.clean_all_llm_responses(resp)
         st.session_state.chat_history.append(("assistant", resp))
         st.rerun()
 
-    if st.button(
-        get_text("nutrition_advice"), key="nutrition_btn", use_container_width=True
-    ):
+    if st.button("🥗 Nutrition Advice", key="nutrition_btn", use_container_width=True):
         st.session_state.chat_history.append(
             ("user", "Can you provide nutrition advice?")
         )
         query = "provide nutrition advice for my current pregnancy stage"
-        if st.session_state.language == "bn":
-            query += " (Please respond in Bengali/বাংলা language)"
         resp = st.session_state.orchestrator.process_query(query)
         resp = OutputProcessors.clean_all_llm_responses(resp)
         st.session_state.chat_history.append(("assistant", resp))
         st.rerun()
 
-    if st.button(
-        get_text("teleconsultation"), key="telecon_btn", use_container_width=True
-    ):
+    if st.button("📞 Teleconsultation", key="telecon_btn", use_container_width=True):
         st.session_state.chat_history.append(
             ("user", "Can you provide the teleconsultation plan?")
         )
         query = "help me schedule a teleconsultation"
-        if st.session_state.language == "bn":
-            query += " (Please respond in Bengali/বাংলা language)"
         resp = st.session_state.orchestrator.process_query(query)
         resp = OutputProcessors.clean_all_llm_responses(resp)
         st.session_state.chat_history.append(("assistant", resp))
         st.rerun()
 
-    if st.button(
-        get_text("postpartum_care"), key="postpartum_btn", use_container_width=True
-    ):
+    if st.button("🏥 Postpartum Care", key="postpartum_btn", use_container_width=True):
         st.session_state.chat_history.append(
             ("user", "Can you provide the postpartum care schedule?")
         )
         with st.spinner("Generating postpartum care schedule..."):
             query = "create my postpartum care schedule"
-            if st.session_state.language == "bn":
-                query += " (Please respond in Bengali/বাংলা language)"
             resp = st.session_state.orchestrator.process_query(query)
             resp = OutputProcessors.clean_all_llm_responses(resp)
         st.session_state.chat_history.append(("assistant", resp))
@@ -1238,9 +1304,9 @@ with col2:
             st.markdown(
                 f"""
                 <div class="welcome-message">
-                    <h3 class="welcome-title">{get_text("welcome_title")}</h3>
+                    <h3 class="welcome-title">Hello! I'm your <span class="maatricare-brand">মাতৃCare</span> agent</h3>
                     <p class="welcome-subtitle">
-                        {get_text("welcome_subtitle")}
+                        I'm here to help you with your pregnancy journey. You can ask me about:<br>• Pregnancy symptoms and health concerns<br>• Appointment scheduling and reminders<br>• Nutrition and lifestyle advice<br>• General pregnancy information<br><br>How can I help you today?
                     </p>
                 </div>
                 """,
@@ -1253,7 +1319,7 @@ with col2:
                     st.markdown(
                         f"""
                         <div class="message-container user-message-container">
-                            <span class="user-label">{get_text("user_label")}</span>
+                            <span class="user-label">You</span>
                             <div class="user-message">{msg}</div>
                         </div>
                         """,
@@ -1264,7 +1330,7 @@ with col2:
                     st.markdown(
                         f"""
                         <div class="message-container assistant-message-container">
-                            <span class="assistant-label">{get_text("assistant_label")}</span>
+                            <span class="assistant-label">মাতৃCare Agent</span>
                         </div>
                         """,
                         unsafe_allow_html=True,
@@ -1283,41 +1349,118 @@ with col2:
                     )
 
 # Chat input at bottom
-user_message = st.chat_input(get_text("chat_input_placeholder"))
+user_message = st.chat_input("Type your message here...")
 
 if user_message and user_message != st.session_state.last_processed:
     # Add user message to history
     st.session_state.chat_history.append(("user", user_message))
     st.session_state.last_processed = user_message
 
-    # Process the message
-    with st.spinner(show_loading_message("response")):
+    # Determine likely agent type for better spinner messages
+    def detect_agent_type(message):
+        message_lower = message.lower()
+
+        # Emergency detection
+        emergency_keywords = [
+            "pain",
+            "bleeding",
+            "emergency",
+            "urgent",
+            "help",
+            "hospital",
+            "doctor now",
+        ]
+        if any(keyword in message_lower for keyword in emergency_keywords):
+            return "emergency"
+
+        # Nutrition detection
+        nutrition_keywords = [
+            "food",
+            "eat",
+            "diet",
+            "nutrition",
+            "meal",
+            "hungry",
+            "vitamin",
+            "recipe",
+            "breakfast",
+            "lunch",
+            "dinner",
+        ]
+        if any(keyword in message_lower for keyword in nutrition_keywords):
+            return "nutrition"
+
+        # Exercise detection
+        exercise_keywords = [
+            "exercise",
+            "workout",
+            "yoga",
+            "walk",
+            "fitness",
+            "active",
+            "movement",
+            "stretch",
+        ]
+        if any(keyword in message_lower for keyword in exercise_keywords):
+            return "exercise"
+
+        # Mood/emotional detection
+        mood_keywords = [
+            "feel",
+            "feeling",
+            "sad",
+            "depressed",
+            "anxious",
+            "worried",
+            "scared",
+            "upset",
+            "emotional",
+            "mood",
+            "stress",
+        ]
+        if any(keyword in message_lower for keyword in mood_keywords):
+            return "mood"
+
+        # Scheduling detection
+        scheduling_keywords = [
+            "appointment",
+            "schedule",
+            "visit",
+            "checkup",
+            "doctor",
+            "anc",
+            "when should",
+        ]
+        if any(keyword in message_lower for keyword in scheduling_keywords):
+            return "schedule"
+
+        return "general"
+
+    detected_agent = detect_agent_type(user_message)
+
+    # Process the message with intelligent spinner
+    with st.spinner(show_loading_message("response", detected_agent)):
         try:
-            # Add language context to the query
-            language_context = ""
-            if st.session_state.language == "bn":
-                language_context = " (Please respond in Bengali/বাংলা language)"
-
-            query_with_language = user_message + language_context
-
             # Use LangGraph orchestrator to process the message
             # Ensure orchestrator has the latest profile data
             if ctx.state.get("profile"):
                 profile_dict = {
-                    "age": ctx.state["profile"].age,
-                    "lmp_date": ctx.state["profile"].lmp_date,
-                    "medical_history": ctx.state["profile"].medical_history,
-                    "allergies": ctx.state["profile"].allergies or [],
-                    "medications": ctx.state["profile"].medications or [],
+                    "age": ctx.state["profile"].get("age"),
+                    "lmp_date": ctx.state["profile"].get("lmp_date"),
+                    "medical_history": ctx.state["profile"].get("medical_history"),
+                    "allergies": ctx.state["profile"].get("allergies", []),
+                    "medications": ctx.state["profile"].get("medications", []),
                 }
                 st.session_state.orchestrator.set_profile(profile_dict)
 
-            resp = st.session_state.orchestrator.process_query(query_with_language)
+            resp = st.session_state.orchestrator.process_query(user_message)
 
             # Clean the response to ensure no reasoning text appears
             resp = OutputProcessors.clean_all_llm_responses(resp)
 
-            logger.info(f"Message processed successfully via LangGraph orchestrator")
+            logger.info(
+                f"Message processed successfully via LangGraph orchestrator - Agent: {detected_agent}"
+            )
 
         except Exception as e:
             error_msg = handle_ui_error(e, "chat_processing")
